@@ -1,8 +1,28 @@
 " File: gtags.vim
 " Author: Tama Communications Corporation
-" Version: 0.1
-" Last Modified: Jan 19, 2004
-" 
+" Version: 0.2
+" Last Modified: Apr 8, 2004
+"
+" Copyright and lisence
+" ---------------------
+" Copyright (c) 2004 Tama Communications Corporation
+"
+" This file is part of GNU GLOBAL.
+"
+" GNU GLOBAL is free software; you can redistribute it and/or modify
+" it under the terms of the GNU General Public License as published by
+" the Free Software Foundation; either version 2, or (at your option)
+" any later version.
+"
+" GNU GLOBAL is distributed in the hope that it will be useful,
+" but WITHOUT ANY WARRANTY; without even the implied warranty of
+" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+" GNU General Public License for more details.
+"
+" You should have received a copy of the GNU General Public License
+" along with this program; if not, write to the Free Software
+" Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+"
 " Overview
 " --------
 " The gtags.vim plugin script integrates the GNU GLOBAL source code tag system
@@ -16,29 +36,63 @@
 " Usage
 " -----
 " First of all, you must execute gtags(1) at the root of source directory
-" to make tag files.
-" Almost global(1)'s command character is available as a command.
+" to make tag files. Assuming that your source directory is '/var/src',
+" it is neccessary to execute the following command.
+"
+"	$ cd /var/src
+"	$ gtags -v		<- The -v means verbose mode.
+"
+" And you will find four tag files in the directory.
 "
 " To go to func, you can say
 "
 "       :Gtags func
 "
-" Special charactor '%', '#' and input completion are available.
+" Input completion is available. If you forgot function name but recall
+" only some characters of the head, please input them and press <TAB> key.
+"
+"       :Gtags fu<TAB>
+"       :Gtags func			<- Vim will append 'nc'.
 "
 " If you omitted argument, vim ask it like this:
 "
 "       Gtags for pattern: <current token>
 "
-" You can use all the regular quickfix commands to traverse from one hit to
-" another.
+" Vim execute `global -t main', parse the output, list located
+" objects in quickfix window and load the first entry.  The quickfix
+" windows is like this:
 "
-"       :h quickfix 
+"      gctags/gctags.c|119| main
+"      global/global.c|154| main
+"      gozilla/gozilla.c|156| main
+"      gtags/gtags.c|199| main
+"      libglibc/getopt.c|701| main
+"      libglibc/getopt1.c|93| main
+"      [Error List]
+"
+" You can go to any entry using quickfix command.
+"
+" :cn'
+"      go to the next entry.
+"
+" :cp'
+"      go to the previous entry.
+"
+" :ccN'
+"      go to the N'th entry.
+"
+" :cl'
+"      list all entries.
+"
+" You can see the help of quickfix like this:
+"
+"          :h quickfix
 "
 " Suggested map:
 "       map <C-n> :cn<CR>
 "       map <C-p> :cp<CR>
 "
-" You can use regular expression too. It requires more execution time though.
+" You can use POSIX regular expression too. It requires more execution time though.
 "
 "       :Gtags ^[sg]et_
 "
@@ -62,10 +116,16 @@
 "
 "       :Gtags -f main.c
 "
-" You can browse project files whose path includs specified pattern.
-" By the way, you can browse under 'vm/' directory by this:
+" If you are editing `main.c' itself, you can use '%' instead.
 "
-"       :Gtags -P /vm/
+"       :Gtags -f %
+"
+" You can browse project files whose path includes specified pattern.
+" For example:
+"
+"       :Gtags -P /vm/			<- all files under 'vm' directory.
+"       :Gtags -P \.h$			<- all include files.
+"	:Gtags -P init			<- all paths includes 'init'
 "
 " If you omitted the argument and input only 'ENTER' to prompt, vim
 " shows list of all files in your project.
