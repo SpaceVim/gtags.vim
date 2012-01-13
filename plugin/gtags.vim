@@ -179,6 +179,13 @@ if exists("loaded_gtags")
     finish
 endif
 
+"
+" global command name
+"
+let s:global_command = $GTAGSGLOBAL
+if s:global_command == ''
+        let s:global_command = "global"
+endif
 " Open the Gtags output window.  Set this variable to zero, to not open
 " the Gtags output window by default.  You can open it manually by using
 " the :cwindow command.
@@ -346,12 +353,10 @@ function! s:ExecLoad(option, long_option, pattern)
     let l:option = l:option . '--result=' . g:Gtags_Result . ' -q'
     let l:option = l:option . s:TrimOption(a:option)
     if l:isfile == 1
-        let l:cmd = 'global ' . l:option . ' ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char
+        let l:cmd = s:global_command . ' ' . l:option . ' ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char
     else
-        let l:cmd = 'global ' . l:option . 'e ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char 
+        let l:cmd = s:global_command . ' ' . l:option . 'e ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char 
     endif
-
-    "echoerr "CMD = ".l:cmd
 
     let l:result = system(l:cmd)
     if v:shell_error != 0
@@ -379,20 +384,18 @@ function! s:ExecLoad(option, long_option, pattern)
         return
     endif
 
-    call OpenTag(a:pattern, l:result)
-
-    "" Open the quickfix window
-    "if g:Gtags_OpenQuickfixWindow == 1
-        "if g:Gtags_VerticalWindow == 1
-            "topleft vertical copen
-        "else
-            "botright copen
-        "endif
-    "endif
+    " Open the quickfix window
+    if g:Gtags_OpenQuickfixWindow == 1
+        if g:Gtags_VerticalWindow == 1
+            topleft vertical copen
+        else
+            botright copen
+        endif
+    endif
     " Parse the output of 'global -x or -t' and show in the quickfix window.
     let l:efm_org = &efm
     let &efm = g:Gtags_Efm
-    "cexpr! l:result
+    cexpr! l:result
     let &efm = l:efm_org
 endfunction
 
@@ -467,7 +470,7 @@ function! GtagsCandidateCore(lead, line, pos)
         endif
         return glob(l:pattern)
     else 
-        return system('global ' . '-c' . s:option . ' ' . a:lead)
+        return system(s:global_command . ' ' . '-c' . s:option . ' ' . a:lead)
     endif
 endfunction
 
@@ -487,346 +490,4 @@ if g:Gtags_Auto_Map == 1
 	:nmap <C-p> :cp<CR>
 	:nmap <C-\><C-]> :GtagsCursor<CR>
 endif
-
-
-
-
-
-
-function! s:GtagsCursor_x()
-    let l:pattern = expand("<cword>")
-    call s:ExecLoad('x', ' ', l:pattern)
-endfunction
-
-
-function! s:GtagsCursor_r()
-    let l:pattern = expand("<cword>")
-    call s:ExecLoad('r', ' ', l:pattern)
-endfunction
-
-function! s:GtagsCursor_s()
-    let l:pattern = expand("<cword>")
-    call s:ExecLoad('s', ' ', l:pattern)
-endfunction
-
-
-:noremap <C-\>   :call <SID>GtagsCursor_x()<CR>
-:noremap <C-R>   :call <SID>GtagsCursor_r()<CR>
-:noremap <C-S>   :call <SID>GtagsCursor_s()<CR>
-:noremap <C-d>   :call CloseTag() <CR>
-
-
-
-let s:Tag={"TagName":"NULL", "TagFileName":"NULL","CurPos":0, "TagType":"NULL" }
-let s:Stack=[]
-let s:TagStack={"TagStack":0, "TagIndex":0, "CurrentTag":0}
-let s:Window=[]
-
-if !exists("loaded_gtags")
-    call add(s:Window, copy(s:TagStack))
-endif
-function! GetWindowNumber()
-    while len(s:Window) <= winnr("$")
-        call AddWindow()
-    endwhile
-    return winnr()
-endfunction
-
-function! DisplaySetup()
-    call add(s:Stack, copy(s:Tag))
-    let s:TagStack.TagStack=copy(s:Stack)
-    call add(s:Window, copy(s:TagStack) )
-    let s:Window[0].TagStack[0].TagName="TEST"
-    echo  "Tag name=". s:Window[0].TagStack[0].TagName
-endfunction
-
-function! GetTagFileName(tag_name)
-    let win_idx = GetWindowNumber()
-    let tag_idx = s:Window[win_idx].TagIndex
-    return GetWindowNumber() ."_". winbufnr(0) ."_". a:tag_name."_".tag_idx
-endfunction
-
-function! OpenBuffer(tag_name, file_name, tag_type)
-    if !bufexists(a:file_name)
-        execute("badd ". a:file_name)
-    endif
-endfunction 
-function! CloseBuffer(tag_name, file_name, tag_type)
-    if bufexists(a:file_name)
-        execute("bwipeout ". a:file_name)
-    endif
-endfunction 
-
-function! LoadBuffer(tag_name, file_name, line_no, tag_type, file_content)
-    if !bufexists(a:file_name)
-        call OpenBuffer(a:tag_name, a:file_name, a:tag_type)
-    endif
-    execute("buffer ". a:file_name)
-    if a:tag_type == "TAG"
-        setlocal modifiable
-        silent put=a:file_content
-        setlocal nomodifiable
-        setlocal buftype=nowrite buflisted
-        "setlocal bufhidden=nodelete
-        setlocal noswapfile
-        setlocal cursorline 
-        silent noremap <buffer> <Enter> <ESC> :call SelectTag() <CR>
-        silent noremap <buffer> <C-\> 
-    endif
-    call cursor(a:line_no,1)
-    call SetStackTopTag(a:tag_name, a:file_name, a:tag_type)
-endfunction 
-
-
-function! SelectBuffer(tag)
-    call SetStackTopTag(a:tag.TagName, a:tag.TagFileName, a:tag.TagType)
-    if !bufexists(a:tag.TagFileName)
-        return CloseTag()
-    endif
-    execute("buffer ". a:tag.TagFileName)
-    call setpos(".", a:tag.CurPos)
-endfunction 
-
-function! OpenTag(tag_name, content)
-    call PushTag(a:tag_name, bufname("%"), "FILE")
-    let tag_file_name = GetTagFileName(a:tag_name)
-    "call OpenBuffer(a:tag_name, tag_file_name, "TAG")
-    call LoadBuffer(a:tag_name, tag_file_name, 2, "TAG", a:content )
-    call AutoSelectTag()
-
-endfunction
-
-function! CloseTag()
-    let win_idx = GetWindowNumber()
-    let tag_idx = s:Window[win_idx].TagIndex-1
-    if tag_idx < 0 
-        echohl WarningMsg | echo "Bottom of Stack" | echohl None
-        return
-    endif
-    let ctag=GetStackTopTag()
-    let tag=PopTag()
-    call SelectBuffer(tag)
-    if ctag.TagType == "TAG"
-        call CloseBuffer( ctag.TagName, ctag.TagFileName, ctag.TagType)
-    endif
-    call AutoCloseTag()
-endfunction 
-
-function! AutoCloseTag()
-    if line(".") <= 1
-        return 
-    endif
-    if line("$") > 2
-        return 
-    endif
-    let tag=GetStackTopTag()
-    if tag.TagType != "TAG"
-        return
-    endif
-    call CloseTag()
-endfunction 
-
-function! SelectTag()
-    if line(".") <= 1
-        return 
-    endif
-    let tag = GetStackTopTag()
-    "echoerr "LINE = ".line(".")
-    let words = split(getline('.'), '\t')
-    let file_name = words[0]
-    let line_no = words[1]
-    let line_cnt = words[2]
-    let tag_type = "TAG"
-    call PushTag(tag.TagName, bufname("%"), tag_type)
-    call LoadBuffer(tag.TagName, file_name, line_no, "FILE", "")
-endfunction
-function! AutoSelectTag()
-    if line(".") <= 1
-        return 
-    endif
-    if line("$") > 2
-        return 
-    endif
-    call SelectTag()
-endfunction
-
-function! PushTag(tag_name, tag_filename, tag_type)
-    let win_idx = GetWindowNumber()
-    let tag_idx = s:Window[win_idx].TagIndex
-    let tag = copy(s:Tag)
-    let tag.TagName = a:tag_name
-    let tag.TagFileName = a:tag_filename
-    let tag.CurPos = getpos(".")
-    let tag.TagType = a:tag_type
-    call add(s:Window[win_idx].TagStack, tag )
-    let s:Window[win_idx].TagIndex = tag_idx+1
-endfunction
-
-function! PopTag()
-    let win_idx = GetWindowNumber()
-    let tag_idx = s:Window[win_idx].TagIndex-1
-    if tag_idx < 0 
-        echo "Bottom of Stack"
-        return 0
-    endif
-    let tag = copy(s:Window[win_idx].TagStack[tag_idx])
-    call remove(s:Window[win_idx].TagStack, tag_idx)
-    let s:Window[win_idx].TagIndex = tag_idx
-    return tag
-endfunction
-
-function! GetStackTopTag()
-    let win_idx = GetWindowNumber()
-    let tag = copy(s:Window[win_idx].CurrentTag)
-    return tag
-endfunction
-
-function! SetStackTopTag(tag_name, tag_filename, tag_type)
-    let win_idx = GetWindowNumber()
-    let s:Window[win_idx].CurrentTag.TagName = a:tag_name
-    let s:Window[win_idx].CurrentTag.TagFileName = a:tag_filename
-    let s:Window[win_idx].CurrentTag.CurPos = getpos(".")
-    let s:Window[win_idx].CurrentTag.TagType = a:tag_type
-endfunction
-
-function! DisplayStackTopTag(index)
-    let tag = copy(s:Window[a:index].CurrentTag)
-    call DisplayTag(tag)
-endfunction
-
-function! DisplayTag(tag)
-    "echo "| ". a:tag.TagName . " | ". a:tag.TagFileName. " | ". a:tag.CurPos[1]. " | ". a:tag.TagType
-    echo printf(" %-30.30s | %-5s | %-5s | %s ",  a:tag.TagName, a:tag.TagType, a:tag.CurPos[1],  a:tag.TagFileName ) 
-endfunction
-
-function! OpenStack(index)
-    let s:Window[a:index].TagStack = copy(s:Stack)
-    let s:Window[a:index].CurrentTag = copy(s:Tag)
-    let s:Window[a:index].TagIndex = 0
-endfunction
-
-function! CloseStack(index)
-    if  len(s:Window[a:index].TagStack) > 0 
-        call remove(s:Window[a:index].TagStack, 0, len(s:Window[a:index].TagStack)-1)
-    endif
-    let s:Window[a:index].TagStack = 0
-    let s:Window[a:index].TagIndex = 0
-endfunction
-function! DisplayStack(index)
-    for i in range(len(s:Window[a:index].TagStack)-1, 0, -1)
-        call DisplayTag( s:Window[a:index].TagStack[i] )
-    endfor
-endfunction
-
-
-function! OpenWindow(index)
-    "echo  "Index = ". a:index
-    if a:index > len(s:Window) 
-        echoerr "Open: Out of index = ".a:index. ",len=". len(s:Window)
-        return
-    endif
-    call insert(s:Window, copy(s:TagStack), a:index )
-    call OpenStack(a:index)
-endfunction
-
-function! CloseWindow(index)
-    "echo  "Index = ". a:index
-    if a:index > len(s:Window) || a:index < 1 
-        echoerr "Close: Out of index = ".a:index. ",len=". len(s:Window)
-        return
-    endif
-    call CloseStack(a:index)
-    call remove(s:Window, a:index )
-endfunction
-
-function! AddWindow()
-    "echo  "Index = ". a:index
-    call add(s:Window, copy(s:TagStack))
-    call OpenStack(len(s:Window)-1)
-endfunction
-
-function! DisplayWindow()
-    for i in range(1, len(s:Window)-1)
-        echo "Window[".i."] TagIndex = ".s:Window[i].TagIndex
-    endfor
-endfunction
-
-function! DisplayWindowStack()
-    for i in range(1, len(s:Window)-1)
-        echo "Window[".i."] TagIndex = ".s:Window[i].TagIndex
-        echo "-------------------------------------Tag Stack------------------------------------"
-        call DisplayStackTopTag(i)
-        call DisplayStack(i)
-    endfor
-endfunction
-
-let s:loadmsg=""
-let s:Event={"LastEvent":"NULL", "LastWinCount":0, "LastWinNo":1 }
-function! EnterBufWindow()
-    "echo "Enter Buf| Number of Window = ". winnr("$").":".winnr().", Current window = ". bufwinnr("%").", buffers= ". winbufnr( 0 ) . ", num buf=". bufnr( "$")
-    "echo "Win Buf |LasWinCnt = ". s:Event.LastWinCount
-    if  s:Event.LastWinCount > winnr("$")
-        "echo "BufWin | Process Window Close, Winno=". s:Event.LastWinNo
-        call CloseWindow(s:Event.LastWinNo)
-    endif
-
-    if s:Event.LastWinCount  == 0
-        "echo "Process Window Open, Winno=". s:Event.LastWinNo
-        call OpenWindow(s:Event.LastWinNo)
-    endif
-
-    "let s:Event.LastEvent = "Enter"
-    let s:Event.LastWinCount = winnr("$")
-    let s:Event.LastWinNo = winnr()
-endfunction
-function! EnterWindow()
-    "echo "Enter | Number of Window = ". winnr("$").":".winnr().", Current window = ". bufwinnr("%").", buffers= ". winbufnr( 0 ) . ", num buf=". bufnr( "$")
-    "echoerr "Win |LasWinCnt = ". s:Event.LastWinCount
-    if  s:Event.LastWinCount > winnr("$")
-        "echo "Win | Process Window Close, Winno=". s:Event.LastWinNo
-        call CloseWindow(s:Event.LastWinNo)
-    endif
-    "let s:Event.LastEvent = "Enter"
-    let s:Event.LastWinCount = winnr("$")
-    let s:Event.LastWinNo = winnr()
-endfunction
-function! LeaveWindow()
-    "echo "Leave | Number of Window = ". winnr("$").":".winnr().", Current window = ". bufwinnr("%").", buffers= ". winbufnr( 0 ) . ", num buf=". bufnr( "$")
-    ""echo "LasWinCnt = ". s:Event.LastWinCount
-    if s:Event.LastWinCount < winnr("$")
-        "echo "Process Window Open, Winno=". s:Event.LastWinNo
-        call OpenWindow(s:Event.LastWinNo)
-    endif
-    if s:Event.LastWinCount > winnr("$")
-        "echo "Process Window Close, Winno=". s:Event.LastWinNo
-        call CloseWindow(s:Event.LastWinNo)
-    endif
-    let s:Event.LastEvent = "Leave"
-    let s:Event.LastWinCount = winnr("$")
-    let s:Event.LastWinNo = winnr()
-
-endfunction
-
-function! LoadMsg()
-    echo "Num of win =". s:loadmsg
-    echo "Len = ".len(s:Window)
-endfunction
-
-autocmd BufWinEnter    * :call EnterBufWindow()
-autocmd WinEnter       * :call EnterWindow()
-autocmd WinLeave       * :call LeaveWindow()
-
-
 let loaded_gtags = 1
-
-
-
-
-
-
-
-
-
-
-
-
