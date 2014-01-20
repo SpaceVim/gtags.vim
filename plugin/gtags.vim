@@ -184,13 +184,11 @@ endif
 
 if !executable('gtags')
     " gtags application is not executable
-    echomsg "gtas is not executable. Did you install gnu global?"
     finish
 endif 
 
 if !filereadable("GTAGS")
     " GTAGS database doesn't exist
-    echomsg "GTAGS database doesn't exist, run gtags first"
     finish
 endif
 
