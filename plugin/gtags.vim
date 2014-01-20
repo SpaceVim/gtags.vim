@@ -1,7 +1,8 @@
 " File: gtags.vim
 " Author: Tama Communications Corporation
-" Version: 0.6
-" Last Modified: September 6, 2011
+" Author: rxwen
+" Version: 1.0
+" Last Modified: Jan 20 22:49:36 CST 2014
 "
 " Copyright and licence
 " ---------------------
@@ -175,6 +176,24 @@
 "	[$HOME/.vimrc]
 "	let Gtags_Auto_Map = 1
 "
+if g:Gtags_prefer_gtags_to_cscope == 0
+    " if user prefer GNU global (gtags) to cscope
+    " don't load current script
+    finish
+endif
+
+if !executable('gtags')
+    " gtags application is not executable
+    echomsg "gtas is not executable. Did you install gnu global?"
+    finish
+endif 
+
+if !filereadable("GTAGS")
+    " GTAGS database doesn't exist
+    echomsg "GTAGS database doesn't exist, run gtags first"
+    finish
+endif
+
 if exists("loaded_gtags")
     finish
 endif
@@ -216,10 +235,10 @@ if exists("g:Gtags_Use_Tags_Format")
     let g:Gtags_Efm = "%m\t%f\t%l"
 endif
 if !exists("g:Gtags_Result")
-    let g:Gtags_Result = "ctags-mod"
+    let g:Gtags_Result = "ctags-x"
 endif
 if !exists("g:Gtags_Efm")
-    let g:Gtags_Efm = "%f\t%l\t%m"
+    let g:Gtags_Efm = "%*\\S%*\\s%l%\\s%f%\\s%m"
 endif
 " Character to use to quote patterns and file names before passing to global.
 " (This code was drived from 'grep.vim'.)
@@ -438,6 +457,29 @@ function! s:GtagsCursor()
 endfunction
 
 "
+" Core Gtags function
+"
+function! GtagsFunc(type, pattern)
+    let l:option = ""
+    if a:type == "g"
+        let l:option .= " -x "
+    elseif a:type == "r"
+        let l:option .= " -x -r "
+    elseif a:type == "s"
+        let l:option .= " -x -g "
+    endif
+    call s:ExecLoad('', l:option, a:pattern)
+endfunction
+
+"
+" Update gtags database
+"
+function! GtagsUpdateDatabase()
+    echomsg "update gtags database"
+    let l:result = system("global -u")
+endfunction
+
+"
 " Show the current position on mozilla.
 " (You need to execute htags(1) in your source directory.)
 "
@@ -477,17 +519,28 @@ endfunction
 " Define the set of Gtags commands
 command! -nargs=* -complete=custom,GtagsCandidate Gtags call s:RunGlobal(<q-args>)
 command! -nargs=0 GtagsCursor call s:GtagsCursor()
-command! -nargs=0 Gozilla call s:Gozilla()
+"command! -nargs=0 Gozilla call s:Gozilla()
+command! -nargs=+ -complete=custom,GtagsCandidate GtagsFunc call GtagsFunc(<q-args>)
 " Suggested map:
-if g:Gtags_Auto_Map == 1
-	:nmap <F2> :copen<CR>
-	:nmap <F4> :cclose<CR>
-	:nmap <F5> :Gtags<SPACE>
-	:nmap <F6> :Gtags -f %<CR>
-	:nmap <F7> :GtagsCursor<CR>
-	:nmap <F8> :Gozilla<CR>
-	:nmap <C-n> :cn<CR>
-	:nmap <C-p> :cp<CR>
-	:nmap <C-\><C-]> :GtagsCursor<CR>
-endif
+function! GtagMapKeys()
+    if g:Gtags_Auto_Map == 1
+        nnoremap <C-]> :Gtags <C-R>=expand("<cword>")<CR><CR>
+        nnoremap <C-\>s :call GtagsFunc ("s", expand("<cword>"))<CR>	
+        nnoremap <C-\>g :call GtagsFunc ("g", expand("<cword>"))<CR>	
+        nnoremap <C-\>c :call GtagsFunc ("r", expand("<cword>"))<CR>	
+
+        nnoremap <C-\>S :call GtagsFunc 
+            \("s", expand("<cword>"))<CR>	
+        nnoremap <C-\>G :call GtagsFunc 
+            \("g", input('Find this definition: ', '', 
+            \"custom,GtagsCandidate"))<CR>
+        nnoremap <C-\>C :call GtagsFunc 
+            \("r", input('Find functions calling this function: ', '', 
+            \"custom,GtagsCandidate"))<CR>	
+    endif
+endfunction
+
+nnoremap <C-\>u :call GtagsUpdateDatabase ()<CR><CR>
+autocmd FileType cpp,c call GtagMapKeys()
+
 let loaded_gtags = 1
