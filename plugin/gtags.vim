@@ -184,11 +184,13 @@ endif
 
 if !executable('gtags')
     " gtags application is not executable
+    let g:Gtags_prefer_gtags_to_cscope = 0
     finish
 endif 
 
 if !filereadable("GTAGS")
     " GTAGS database doesn't exist
+    let g:Gtags_prefer_gtags_to_cscope = 0
     finish
 endif
 
