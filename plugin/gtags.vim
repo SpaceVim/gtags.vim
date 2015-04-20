@@ -243,6 +243,55 @@ if !exists("g:Gtags_Single_Quote_Char")
 endif
 
 "
+" Stack Object.
+"
+function! s:Stack()
+    let l:this = {}
+    let l:this.container = []
+
+    function! l:this.push(item)
+        call add(self.container, a:item)
+    endfunction
+
+    function! l:this.pop()
+        if len(self.container) <= 0
+            throw 'Stack Empty'
+        endif
+
+        let l:item = self.container[-1]
+        unlet self.container[-1]
+
+        return l:item
+    endfunction
+
+    return l:this
+endfunction
+
+function! s:Memorize()
+    let l:data = {
+        \"file": expand("%"),
+        \"position": getpos("."),
+    \}
+    call s:crumbs.push(l:data)
+endfunction
+
+function! s:Remind()
+    try
+        let l:data = s:crumbs.pop()
+    catch
+        call s:Error(v:exception)
+        return
+    endtry
+
+    execute "e " . l:data.file
+    call setpos(".", l:data.position)
+endfunction
+
+if ! exists("s:crumbs")
+    let s:crumbs = s:Stack()
+endif
+
+"
 " Display error message.
 "
 function! s:Error(msg)
@@ -384,6 +433,8 @@ function! s:ExecLoad(option, long_option, pattern)
         return
     endif
 
+    call s:Memorize()
+
     " Open the quickfix window
     if g:Gtags_OpenQuickfixWindow == 1
         if g:Gtags_VerticalWindow == 1
@@ -478,6 +529,8 @@ endfunction
 command! -nargs=* -complete=custom,GtagsCandidate Gtags call s:RunGlobal(<q-args>)
 command! -nargs=0 GtagsCursor call s:GtagsCursor()
 command! -nargs=0 Gozilla call s:Gozilla()
+command! -nargs=0 GtagsRemind call s:Remind()
+
 " Suggested map:
 if g:Gtags_Auto_Map == 1
 	:nmap <F2> :copen<CR>
