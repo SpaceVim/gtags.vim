@@ -188,17 +188,57 @@ if !executable('gtags')
     finish
 endif 
 
+" Suggested map:
+function! GtagsMapKeys()
+    if g:Gtags_Auto_Map == 1
+        nnoremap <C-]> :Gtags <C-R>=expand("<cword>")<CR><CR>
+        " search for tags not defined
+        nnoremap <C-\>s :call GtagsFunc ("s", expand("<cword>"))<CR>	
+        " search for definition
+        nnoremap <C-\>g :call GtagsFunc ("g", expand("<cword>"))<CR>	
+        " search for reference
+        nnoremap <C-\>c :call GtagsFunc ("r", expand("<cword>"))<CR>	
+        " search for pattern, like egrep
+        nnoremap <C-\>e :call GtagsFunc ("e", expand("<cword>"))<CR>	
+        " search for file
+        nnoremap <C-\>f :call GtagsFunc ("f", expand("<cword>"))<CR>	
+        " search tags in current file
+        nnoremap <C-\>t :call GtagsFunc ("t", expand("%"))<CR>	
+
+        nnoremap <C-\>S :call GtagsFunc 
+            \("s", input('Find symbols not defined: ', '', 
+            \"custom,GtagsCandidate"))<CR>
+        nnoremap <C-\>G :call GtagsFunc 
+            \("g", input('Find this definition: ', '', 
+            \"custom,GtagsCandidate"))<CR>
+        nnoremap <C-\>C :call GtagsFunc 
+            \("r", input('Find functions calling this function: ', '', 
+            \"custom,GtagsCandidate"))<CR>
+        nnoremap <C-\>E :call GtagsFunc 
+            \("e", input('Find pattern: ', '', 
+            \"custom,GtagsCandidate"))<CR>
+        nnoremap <C-\>F :call GtagsFunc 
+            \("f", input('Find file: ', '', 
+            \"custom,GtagsCandidate"))<CR>
+        nnoremap <C-\>T :call GtagsFunc 
+            \("t", input('Find tags in file: ', '', 
+            \"file"))<CR>
+        nnoremap <C-\>u :call GtagsUpdateDatabase ()<CR><CR>
+    endif
+endfunction
+
 if !filereadable("GTAGS")
     " GTAGS database doesn't exist
     let g:Gtags_prefer_gtags_to_cscope = 0
-    finish
+else
+    call GtagsMapKeys()
+    let g:Gtags_prefer_gtags_to_cscope = 1
 endif
-
-let g:Gtags_prefer_gtags_to_cscope = 1
 
 if exists("loaded_gtags")
     finish
 endif
+let loaded_gtags = 1
 
 "
 " global command name
@@ -527,41 +567,5 @@ command! -nargs=* -complete=custom,GtagsCandidate Gtags call s:RunGlobal(<q-args
 command! -nargs=0 GtagsCursor call s:GtagsCursor()
 "command! -nargs=0 Gozilla call s:Gozilla()
 command! -nargs=+ -complete=custom,GtagsCandidate GtagsFunc call GtagsFunc(<q-args>)
-" Suggested map:
-function! GtagsMapKeys()
-    if g:Gtags_Auto_Map == 1
-        nnoremap <C-]> :Gtags <C-R>=expand("<cword>")<CR><CR>
-        " search for tags not defined
-        nnoremap <C-\>s :call GtagsFunc ("s", expand("<cword>"))<CR>	
-        " search for definition
-        nnoremap <C-\>g :call GtagsFunc ("g", expand("<cword>"))<CR>	
-        " search for reference
-        nnoremap <C-\>c :call GtagsFunc ("r", expand("<cword>"))<CR>	
-        " search for pattern, like egrep
-        nnoremap <C-\>e :call GtagsFunc ("e", expand("<cword>"))<CR>	
-        " search for file
-        nnoremap <C-\>f :call GtagsFunc ("f", expand("<cword>"))<CR>	
 
-        nnoremap <C-\>S :call GtagsFunc 
-            \("s", input('Find symbols not defined: ', '', 
-            \"custom,GtagsCandidate"))<CR>
-        nnoremap <C-\>G :call GtagsFunc 
-            \("g", input('Find this definition: ', '', 
-            \"custom,GtagsCandidate"))<CR>
-        nnoremap <C-\>C :call GtagsFunc 
-            \("r", input('Find functions calling this function: ', '', 
-            \"custom,GtagsCandidate"))<CR>
-        nnoremap <C-\>E :call GtagsFunc 
-            \("e", input('Find pattern: ', '', 
-            \"custom,GtagsCandidate"))<CR>
-        nnoremap <C-\>F :call GtagsFunc 
-            \("f", input('Find file: ', '', 
-            \"custom,GtagsCandidate"))<CR>
-    endif
-endfunction
-
-nnoremap <C-\>u :call GtagsUpdateDatabase ()<CR><CR>
-"autocmd FileType cpp,c,java call GtagsMapKeys()
-call GtagsMapKeys()
-
-let loaded_gtags = 1
+command! GtagsEnable call GtagsMapKeys()
