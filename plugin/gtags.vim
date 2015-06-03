@@ -562,10 +562,21 @@ function! GtagsCandidateCore(lead, line, pos)
     endif
 endfunction
 
+function! GtagsShowGtagsLibPath()
+    :echo $GTAGSLIBPATH
+endfunction
+
+function! GtagsAddLib(path)
+    let $GTAGSLIBPATH .= ':'.a:path
+    :echo $GTAGSLIBPATH
+endfunction
+
 " Define the set of Gtags commands
 command! -nargs=* -complete=custom,GtagsCandidate Gtags call s:RunGlobal(<q-args>)
 command! -nargs=0 GtagsCursor call s:GtagsCursor()
 "command! -nargs=0 Gozilla call s:Gozilla()
 command! -nargs=+ -complete=custom,GtagsCandidate GtagsFunc call GtagsFunc(<q-args>)
+command! -nargs=0 GtagsShowGtagsLibPath call GtagsShowGtagsLibPath()
+command! -nargs=+ -complete=dir GtagsAddLib call GtagsAddLib(<q-args>)
 
 command! GtagsEnable call GtagsMapKeys()
