@@ -323,7 +323,7 @@ function! s:TrimOption(option)
 
     while l:i < l:length
         let l:c = a:option[l:i]
-        if l:c !~ '[cenpquv]'
+        if l:c !~# '[cenpquv]'
             let l:option = l:option . l:c
         endif
         let l:i = l:i + 1
@@ -350,6 +350,7 @@ function! s:ExecLoad(option, long_option, pattern)
     if a:long_option != ''
         let l:option = a:long_option . ' '
     endif
+    let l:option = l:option . '--nearness=' . expand('%:p:h') . ' ' 
     let l:option = l:option . '--result=' . g:Gtags_Result . ' -q'
     let l:option = l:option . s:TrimOption(a:option)
     if l:isfile == 1
@@ -431,8 +432,12 @@ endfunction
 "
 " Execute RunGlobal() depending on the current position.
 "
-function! s:GtagsCursor()
-    let l:pattern = expand("<cword>")
+function! s:GtagsCursor(line)
+    if a:line == "" 
+        let l:pattern = expand("<cword>")
+    else
+        let l:pattern = a:line
+    endif
     let l:option = "--from-here=\"" . line('.') . ":" . expand("%") . "\""
     call s:ExecLoad('', l:option, l:pattern)
 endfunction
@@ -476,7 +481,7 @@ endfunction
 
 " Define the set of Gtags commands
 command! -nargs=* -complete=custom,GtagsCandidate Gtags call s:RunGlobal(<q-args>)
-command! -nargs=0 GtagsCursor call s:GtagsCursor()
+command! -nargs=* -complete=custom,GtagsCandidate GtagsCursor call s:GtagsCursor(<q-args>)
 command! -nargs=0 Gozilla call s:Gozilla()
 " Suggested map:
 if g:Gtags_Auto_Map == 1
