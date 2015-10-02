@@ -23,10 +23,13 @@
 "
 " You should have received a copy of the GNU General Public License
 " along with this program.  If not, see <http://www.gnu.org/licenses/>.
-"
+
 if !executable('gtags')
     " gtags application is not executable
     finish
+else
+    let ver_str = split(system('gtags --version'), '\n')[0]
+    let s:version = split(matchstr(ver_str, '[0-9]\+\.[0-9]\+'), '\.')
 endif
 
 if !filereadable("GTAGS")
@@ -304,7 +307,9 @@ function! s:ExecLoad(option, long_option, pattern)
     if a:long_option != ''
         let l:option = a:long_option . ' '
     endif
-    let l:option = l:option . '--nearness=' . expand('%:p:h') . ' '
+    if s:version[0] > 6 || (s:version[0] == 6 && s:version[1] >= 5)
+        let l:option = l:option . '--nearness=' . expand('%:p:h') . ' '
+    endif
     let l:option = l:option . '--result=' . g:Gtags_Result . ' -q'
     let l:option = l:option . s:TrimOption(a:option)
     if l:isfile == 1
@@ -315,14 +320,12 @@ function! s:ExecLoad(option, long_option, pattern)
 
     let l:result = system(l:cmd)
     if v:shell_error != 0
-        if v:shell_error != 0
-            if v:shell_error == 2
-                call s:Error('invalid arguments. (gtags.vim requires GLOBAL 5.7 or later)')
-            elseif v:shell_error == 3
-                call s:Error('GTAGS not found.')
-            else
-                call s:Error('global command failed. command line: ' . l:cmd)
-            endif
+        if v:shell_error == 2
+            call s:Error('invalid arguments. (gtags.vim requires GLOBAL 5.7 or later)')
+        elseif v:shell_error == 3
+            call s:Error('GTAGS not found.')
+        else
+            call s:Error('global command failed. command line: ' . l:cmd)
         endif
         return
     endif
