@@ -32,11 +32,6 @@ else
     let s:version = split(matchstr(ver_str, '[0-9]\+\.[0-9]\+'), '\.')
 endif
 
-if !filereadable("GTAGS")
-    " GTAGS database doesn't exist
-    finish
-endif
-
 if exists("loaded_gtags")
     finish
 endif
@@ -233,6 +228,7 @@ function! s:Extract(line, target)
                    let l:i = l:i + 1
                 endwhile
             else
+                let l:c = ''
                 while l:i < l:length && a:line[l:i] != ' '
                     let l:c = a:line[l:i]
                     let l:option = l:option . l:c
@@ -297,7 +293,7 @@ function! s:ExecLoad(option, long_option, pattern)
     let l:option = ''
     let l:result = ''
 
-    if a:option =~ 'f'
+    if a:option =~# 'f'
         let l:isfile = 1
         if filereadable(a:pattern) == 0
             call s:Error('File ' . a:pattern . ' not found.')
@@ -330,14 +326,14 @@ function! s:ExecLoad(option, long_option, pattern)
         return
     endif
     if l:result == ''
-        if l:option =~ 'f'
-            call s:Error('Tag not found in ' . a:pattern . '.')
-        elseif l:option =~ 'P'
-            call s:Error('Path which matches to ' . a:pattern . ' not found.')
-        elseif l:option =~ 'g'
-            call s:Error('Line which matches to ' . a:pattern . ' not found.')
+        if a:option =~# 'f'
+            call s:Error('No tags found in ' . a:pattern)
+        elseif a:option =~# 'P'
+            call s:Error('No path matches found for ' . a:pattern)
+        elseif a:option =~# 'g'
+            call s:Error('No line matches found for ' . a:pattern)
         else
-            call s:Error('Tag which matches to ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char . ' not found.')
+            call s:Error('No tag matches found for ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char)
         endif
         return
     endif
@@ -457,7 +453,11 @@ function! GtagsCandidateCore(lead, line, pos)
         endif
         return glob(l:pattern)
     else
-        return system(s:global_command . ' ' . '-c' . s:option . ' ' . a:lead)
+        let l:cands = system(s:global_command . ' ' . '-c' . s:option . ' ' . a:lead)
+        if v:shell_error == 0
+            return l:cands
+        endif
+        return ''
     endif
 endfunction
 
