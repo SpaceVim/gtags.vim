@@ -106,7 +106,7 @@ endif
 
 " Suggested map:
 function! s:MapKeys()
-    nnoremap <C-]> :Gtags <C-R>=expand("<cword>")<CR><CR>
+    nnoremap <C-\><C-\> :Gtags <C-R>=expand("<cword>")<CR><CR>
     " search for tags not defined
     nnoremap <C-\>s :call <SID>Func ("s", expand("<cword>"))<CR>
     " search for definition
