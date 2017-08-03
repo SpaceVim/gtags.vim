@@ -4,20 +4,6 @@
 " system with Vim. About the details, see http://www.gnu.org/software/global/.
 
 
-
-
-""
-" Enable/Disable default mappings.
- let g:gtags_auto_map = 0
-
-""
-" Set the global command name. If it is not set, will use $GTAGSGLOBAL, and if
-" $GTAGSGLOBAL still is an empty string, then will use 'global'.
-let g:gtags_global_command = get(g:, 'gtags_global_command',
-            \ empty($GTAGSGLOBAL) ? 'global' : $GTAGSGLOBAL
-            \ )
-
-
 ""
 " General form of Gtags command is as follows:
 " >

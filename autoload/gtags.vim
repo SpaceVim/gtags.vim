@@ -1,36 +1,34 @@
-
 if !executable('gtags')
-    " gtags application is not executable
+    echohl WarningMsg
+    echom 'you need to install gnu global!'
+    echohl NONE
     finish
 else
-    let ver_str = split(system('gtags --version'), '\n')[0]
-    let s:version = split(matchstr(ver_str, '[0-9]\+\.[0-9]\+'), '\.')
+    let s:version = split(matchstr(split(system('gtags --version'), '\n')[0], '[0-9]\+\.[0-9]\+'), '\.')
 endif
 
-if exists("loaded_gtags")
+if exists('g:loaded_gtags')
     finish
 endif
-let loaded_gtags = 1
+let g:loaded_gtags = 1
 
-if !exists("g:Gtags_Auto_Map")
-    let g:Gtags_Auto_Map = 1
-endif
 
-" Open the Gtags output window.  Set this variable to zero, to not open
-" the Gtags output window by default.  You can open it manually by using
-" the :cwindow command.
-" (This code was drived from 'grep.vim'.)
-if !exists("g:Gtags_OpenQuickfixWindow")
-    let g:Gtags_OpenQuickfixWindow = 1
-endif
+""
+" Set the global command name. If it is not set, will use $GTAGSGLOBAL, and if
+" $GTAGSGLOBAL still is an empty string, then will use 'global'.
+let g:gtags_global_command = get(g:, 'gtags_global_command',
+            \ empty($GTAGSGLOBAL) ? 'global' : $GTAGSGLOBAL
+            \ )
 
-if !exists("g:Gtags_VerticalWindow")
-    let g:Gtags_VerticalWindow = 0
-endif
+""
+" Enable/Disable default mappings.
+let g:gtags_auto_map = get(g:, 'gtags_auto_map', 0)
 
-if !exists("Gtags_Auto_Map")
-    let Gtags_Auto_Map = 0
-endif
+""
+" This setting will open the |quickfix| list when adding entries. A value of 2 will
+" preserve the cursor position when the |quickfix| window is
+" opened. Defaults to 0.
+let g:gtags_open_list = get(g:, 'gtags_open_list', 0)
 
 " -- ctags-x format
 " let Gtags_Result = "ctags-x"
@@ -41,27 +39,27 @@ endif
 " let Gtags_Efm = "%m\t%f\t%l"
 "
 " Gtags_Use_Tags_Format is obsoleted.
-if exists("g:Gtags_Use_Tags_Format")
-    let g:Gtags_Result = "ctags"
+if exists('g:Gtags_Use_Tags_Format')
+    let g:Gtags_Result = 'ctags'
     let g:Gtags_Efm = "%m\t%f\t%l"
 endif
-if !exists("g:Gtags_Result")
-    let g:Gtags_Result = "ctags-x"
+if !exists('g:Gtags_Result')
+    let g:Gtags_Result = 'ctags-x'
 endif
-if !exists("g:Gtags_Efm")
+if !exists('g:Gtags_Efm')
     let g:Gtags_Efm = "%*\\S%*\\s%l%\\s%f%\\s%m"
 endif
 " Character to use to quote patterns and file names before passing to global.
 " (This code was drived from 'grep.vim'.)
-if !exists("g:Gtags_Shell_Quote_Char")
-    if has("win32") || has("win16") || has("win95")
+if !exists('g:Gtags_Shell_Quote_Char')
+    if has('win32') || has('win16') || has('win95')
         let g:Gtags_Shell_Quote_Char = '"'
     else
         let g:Gtags_Shell_Quote_Char = "'"
     endif
 endif
-if !exists("g:Gtags_Single_Quote_Char")
-    if has("win32") || has("win16") || has("win95")
+if !exists('g:Gtags_Single_Quote_Char')
+    if has('win32') || has('win16') || has('win95')
         let g:Gtags_Single_Quote_Char = "'"
         let g:Gtags_Double_Quote_Char = '\"'
     else
@@ -73,7 +71,7 @@ if !exists("g:Gtags_Single_Quote_Char")
 endif
 
 " Suggested map:
-function! s:MapKeys()
+function! s:MapKeys() abort
     nnoremap <C-\><C-\> :Gtags <C-R>=expand("<cword>")<CR><CR>
     " search for tags not defined
     nnoremap <C-\>s :call <SID>Func ("s", expand("<cword>"))<CR>
@@ -89,23 +87,23 @@ function! s:MapKeys()
     nnoremap <C-\>t :call <SID>Func ("t", expand("%"))<CR>
 
     nnoremap <C-\>S :call <SID>Func
-        \("s", input('Find symbols not defined: ', '',
-        \"custom,GtagsCandidate"))<CR>
+                \("s", input('Find symbols not defined: ', '',
+                \"custom,GtagsCandidate"))<CR>
     nnoremap <C-\>G :call <SID>Func
-        \("g", input('Find this definition: ', '',
-        \"custom,GtagsCandidate"))<CR>
+                \("g", input('Find this definition: ', '',
+                \"custom,GtagsCandidate"))<CR>
     nnoremap <C-\>C :call <SID>Func
-        \("r", input('Find functions calling this function: ', '',
-        \"custom,GtagsCandidate"))<CR>
+                \("r", input('Find functions calling this function: ', '',
+                \"custom,GtagsCandidate"))<CR>
     nnoremap <C-\>E :call <SID>Func
-        \("e", input('Find pattern: ', '',
-        \"custom,GtagsCandidate"))<CR>
+                \("e", input('Find pattern: ', '',
+                \"custom,GtagsCandidate"))<CR>
     nnoremap <C-\>F :call <SID>Func
-        \("f", input('Find file: ', '',
-        \"custom,GtagsCandidate"))<CR>
+                \("f", input('Find file: ', '',
+                \"custom,GtagsCandidate"))<CR>
     nnoremap <C-\>T :call <SID>Func
-        \("t", input('Find tags in file: ', '',
-        \"file"))<CR>
+                \("t", input('Find tags in file: ', '',
+                \"file"))<CR>
     nnoremap <C-\>u :call <SID>UpdateDatabase ()<CR><CR>
 endfunction
 
@@ -116,15 +114,15 @@ endif
 "
 " Stack Object.
 "
-function! s:Stack()
+function! s:Stack() abort
     let l:this = {}
     let l:this.container = []
 
-    function! l:this.push(item)
+    function! l:this.push(item) abort
         call add(self.container, a:item)
     endfunction
 
-    function! l:this.pop()
+    function! l:this.pop() abort
         if len(self.container) <= 0
             throw 'Stack Empty'
         endif
@@ -138,15 +136,15 @@ function! s:Stack()
     return l:this
 endfunction
 
-function! s:Memorize()
+function! s:Memorize() abort
     let l:data = {
-        \"file": expand("%"),
-        \"position": getpos("."),
-    \}
+                \'file': expand('%'),
+                \'position': getpos('.'),
+                \}
     call s:crumbs.push(l:data)
 endfunction
 
-function! gtags#remind()
+function! gtags#remind() abort
     try
         let l:data = s:crumbs.pop()
     catch
@@ -154,26 +152,26 @@ function! gtags#remind()
         return
     endtry
 
-    execute "e " . l:data.file
-    call setpos(".", l:data.position)
+    execute 'e ' . l:data.file
+    call setpos('.', l:data.position)
 endfunction
 
-if ! exists("s:crumbs")
+if ! exists('s:crumbs')
     let s:crumbs = s:Stack()
 endif
 
 "
 " Display error message.
 "
-function! s:Error(msg)
+function! s:Error(msg) abort
     echohl WarningMsg |
-           \ echomsg 'Error: ' . a:msg |
-           \ echohl None
+                \ echomsg 'Error: ' . a:msg |
+                \ echohl None
 endfunction
 "
 " Extract pattern or option string.
 "
-function! s:Extract(line, target)
+function! s:Extract(line, target) abort
     let l:option = ''
     let l:pattern = ''
     let l:force_pattern = 0
@@ -184,25 +182,25 @@ function! s:Extract(line, target)
     if a:line =~ '^Gtags'
         let l:i = 5
     endif
-    while l:i < l:length && a:line[l:i] == ' '
-       let l:i = l:i + 1
+    while l:i < l:length && a:line[l:i] ==# ' '
+        let l:i = l:i + 1
     endwhile
     while l:i < l:length
-        if a:line[l:i] == "-" && l:force_pattern == 0
+        if a:line[l:i] ==# '-' && l:force_pattern == 0
             let l:i = l:i + 1
             " Ignore long name option like --help.
-            if l:i < l:length && a:line[l:i] == '-'
-                while l:i < l:length && a:line[l:i] != ' '
-                   let l:i = l:i + 1
+            if l:i < l:length && a:line[l:i] ==# '-'
+                while l:i < l:length && a:line[l:i] !=# ' '
+                    let l:i = l:i + 1
                 endwhile
             else
                 let l:c = ''
-                while l:i < l:length && a:line[l:i] != ' '
+                while l:i < l:length && a:line[l:i] !=# ' '
                     let l:c = a:line[l:i]
                     let l:option = l:option . l:c
                     let l:i = l:i + 1
                 endwhile
-                if l:c == 'e'
+                if l:c ==# 'e'
                     let l:force_pattern = 1
                 endif
             endif
@@ -210,25 +208,25 @@ function! s:Extract(line, target)
             let l:pattern = ''
             " allow pattern includes blanks.
             while l:i < l:length
-                 if a:line[l:i] == "'"
-                     let l:pattern = l:pattern . g:Gtags_Single_Quote_Char
-                 elseif a:line[l:i] == '"'
-                     let l:pattern = l:pattern . g:Gtags_Double_Quote_Char
-                 else
-                     let l:pattern = l:pattern . a:line[l:i]
-                 endif
+                if a:line[l:i] ==# "'"
+                    let l:pattern = l:pattern . g:Gtags_Single_Quote_Char
+                elseif a:line[l:i] ==# '"'
+                    let l:pattern = l:pattern . g:Gtags_Double_Quote_Char
+                else
+                    let l:pattern = l:pattern . a:line[l:i]
+                endif
                 let l:i = l:i + 1
             endwhile
-            if a:target == 'pattern'
+            if a:target ==# 'pattern'
                 return l:pattern
             endif
         endif
         " Skip blanks.
-        while l:i < l:length && a:line[l:i] == ' '
-               let l:i = l:i + 1
+        while l:i < l:length && a:line[l:i] ==# ' '
+            let l:i = l:i + 1
         endwhile
     endwhile
-    if a:target == 'option'
+    if a:target ==# 'option'
         return l:option
     endif
     return ''
@@ -237,7 +235,7 @@ endfunction
 "
 " Trim options to avoid errors.
 "
-function! s:TrimOption(option)
+function! s:TrimOption(option) abort
     let l:option = ''
     let l:length = strlen(a:option)
     let l:i = 0
@@ -255,7 +253,7 @@ endfunction
 "
 " Execute global and load the result into quickfix window.
 "
-function! s:ExecLoad(option, long_option, pattern)
+function! s:ExecLoad(option, long_option, pattern) abort
     " Execute global(1) command and write the result to a temporary file.
     let l:isfile = 0
     let l:option = ''
@@ -268,7 +266,7 @@ function! s:ExecLoad(option, long_option, pattern)
             return
         endif
     endif
-    if a:long_option != ''
+    if a:long_option !=# ''
         let l:option = a:long_option . ' '
     endif
     if s:version[0] > 6 || (s:version[0] == 6 && s:version[1] >= 5)
@@ -277,9 +275,9 @@ function! s:ExecLoad(option, long_option, pattern)
     let l:option = l:option . '--result=' . g:Gtags_Result . ' -q'
     let l:option = l:option . s:TrimOption(a:option)
     if l:isfile == 1
-        let l:cmd = s:global_command . ' ' . l:option . ' ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char
+        let l:cmd = g:gtags_global_command . ' ' . l:option . ' ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char
     else
-        let l:cmd = s:global_command . ' ' . l:option . 'e ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char
+        let l:cmd = g:gtags_global_command . ' ' . l:option . 'e ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char
     endif
 
     let l:result = system(l:cmd)
@@ -293,7 +291,7 @@ function! s:ExecLoad(option, long_option, pattern)
         endif
         return
     endif
-    if l:result == ''
+    if l:result ==# ''
         if a:option =~# 'f'
             call s:Error('No tags found in ' . a:pattern)
         elseif a:option =~# 'P'
@@ -309,12 +307,12 @@ function! s:ExecLoad(option, long_option, pattern)
     call s:Memorize()
 
     " Open the quickfix window
-    if g:Gtags_OpenQuickfixWindow == 1
-        if g:Gtags_VerticalWindow == 1
-            topleft vertical copen
-        else
-            botright copen
-        endif
+    if g:gtags_open_list == 1
+        botright copen
+    elseif g:gtags_open_list == 2
+        call s:save_prev_windows()
+        botright copen
+        call s:restore_prev_windows()
     endif
     " Parse the output of 'global -x or -t' and show in the quickfix window.
     let l:efm_org = &efm
@@ -323,28 +321,59 @@ function! s:ExecLoad(option, long_option, pattern)
     let &efm = l:efm_org
 endfunction
 
+let s:prev_windows = []
+function! s:save_prev_windows() abort
+    let aw = winnr('#')
+    let pw = winnr()
+    if exists('*win_getid')
+        let aw_id = win_getid(aw)
+        let pw_id = win_getid(pw)
+    else
+        let aw_id = 0
+        let pw_id = 0
+    endif
+    call add(s:prev_windows, [aw, pw, aw_id, pw_id])
+endfunction
+
+function! s:restore_prev_windows() abort
+    let [aw, pw, aw_id, pw_id] = remove(s:prev_windows, 0)
+    if winnr() != pw
+        " Go back, maintaining the '#' window (CTRL-W_p).
+        if pw_id
+            let aw = win_id2win(aw_id)
+            let pw = win_id2win(pw_id)
+        endif
+        if pw
+            if aw
+                exec aw . 'wincmd w'
+            endif
+            exec pw . 'wincmd w'
+        endif
+    endif
+endfunction
+
 "
 " RunGlobal()
 "
-function! gtags#global(line)
+function! gtags#global(line) abort
     let l:pattern = s:Extract(a:line, 'pattern')
 
-    if l:pattern == '%'
+    if l:pattern ==# '%'
         let l:pattern = expand('%')
-    elseif l:pattern == '#'
+    elseif l:pattern ==# '#'
         let l:pattern = expand('#')
     endif
     let l:option = s:Extract(a:line, 'option')
     " If no pattern supplied then get it from user.
-    if l:pattern == ''
+    if l:pattern ==# ''
         let s:option = l:option
-        if l:option =~ 'f'
-            let l:line = input("Gtags for file: ", expand('%'), 'file')
+        if l:option =~# 'f'
+            let l:line = input('Gtags for file: ', expand('%'), 'file')
         else
-            let l:line = input("Gtags for pattern: ", expand('<cword>'), 'custom,GtagsCandidateCore')
+            let l:line = input('Gtags for pattern: ', expand('<cword>'), 'custom,GtagsCandidateCore')
         endif
         let l:pattern = s:Extract(l:line, 'pattern')
-        if l:pattern == ''
+        if l:pattern ==# ''
             call s:Error('Pattern not specified.')
             return
         endif
@@ -355,27 +384,27 @@ endfunction
 "
 " Execute RunGlobal() depending on the current position.
 "
-function! gtags#cursor()
-    let l:pattern = expand("<cword>")
-    let l:option = "--from-here=\"" . line('.') . ":" . expand("%") . "\""
+function! gtags#cursor() abort
+    let l:pattern = expand('<cword>')
+    let l:option = "--from-here=\"" . line('.') . ':' . expand('%') . "\""
     call s:ExecLoad('', l:option, l:pattern)
 endfunction
 
 "
 " Core Gtags function
 "
-function! gtags#func(type, pattern)
-    let l:option = ""
-    if a:type == "g"
-        let l:option .= " -x "
-    elseif a:type == "r"
-        let l:option .= " -x -r "
-    elseif a:type == "s"
-        let l:option .= " -x -s "
-    elseif a:type == "e"
-        let l:option .= " -x -g "
-    elseif a:type == "f"
-        let l:option .= " -x -P "
+function! gtags#func(type, pattern) abort
+    let l:option = ''
+    if a:type ==# 'g'
+        let l:option .= ' -x '
+    elseif a:type ==# 'r'
+        let l:option .= ' -x -r '
+    elseif a:type ==# 's'
+        let l:option .= ' -x -s '
+    elseif a:type ==# 'e'
+        let l:option .= ' -x -g '
+    elseif a:type ==# 'f'
+        let l:option .= ' -x -P '
     endif
     call s:ExecLoad('', l:option, a:pattern)
 endfunction
@@ -383,35 +412,36 @@ endfunction
 "
 " Update gtags database
 "
-function! s:UpdateDatabase()
-    echomsg "update gtags database"
-    let l:result = system("global -u")
+function! gtags#update_database() abort
+    echomsg 'update gtags database'
+    let l:result = system('global -u')
+    echom l:result
 endfunction
 
 "
 " Show the current position on mozilla.
 " (You need to execute htags(1) in your source directory.)
 "
-function! gtags#gozilla()
+function! gtags#gozilla() abort
     let l:lineno = line('.')
-    let l:filename = expand("%")
+    let l:filename = expand('%')
     let l:result = system('gozilla +' . l:lineno . ' ' . l:filename)
 endfunction
 
 "
 " Custom completion.
 "
-function! gtags#complete(lead, line, pos)
+function! gtags#complete(lead, line, pos) abort
     let s:option = s:Extract(a:line, 'option')
     return s:GtagsCandidateCore(a:lead, a:line, a:pos)
 endfunction
 
-function! s:GtagsCandidateCore(lead, line, pos)
-    if s:option == 'g'
+function! s:GtagsCandidateCore(lead, line, pos) abort
+    if s:option ==# 'g'
         return ''
-    elseif s:option == 'f'
+    elseif s:option ==# 'f'
         if isdirectory(a:lead)
-            if a:lead =~ '/$'
+            if a:lead =~# '/$'
                 let l:pattern = a:lead . '*'
             else
                 let l:pattern = a:lead . '/*'
@@ -421,7 +451,7 @@ function! s:GtagsCandidateCore(lead, line, pos)
         endif
         return glob(l:pattern)
     else
-        let l:cands = system(s:global_command . ' ' . '-c' . s:option . ' ' . a:lead)
+        let l:cands = system(g:gtags_global_command . ' ' . '-c' . s:option . ' ' . a:lead)
         if v:shell_error == 0
             return l:cands
         endif
@@ -429,11 +459,11 @@ function! s:GtagsCandidateCore(lead, line, pos)
     endif
 endfunction
 
-function! gtags#show_lib_path()
+function! gtags#show_lib_path() abort
     echo $GTAGSLIBPATH
 endfunction
 
-function! gtags#add_lib(path)
+function! gtags#add_lib(path) abort
     let $GTAGSLIBPATH .= ':'.a:path
     echo $GTAGSLIBPATH
 endfunction
