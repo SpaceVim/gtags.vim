@@ -16,13 +16,6 @@ if !exists("g:Gtags_Auto_Map")
     let g:Gtags_Auto_Map = 1
 endif
 
-"
-" global command name
-"
-let s:global_command = $GTAGSGLOBAL
-if s:global_command == ''
-    let s:global_command = "global"
-endif
 " Open the Gtags output window.  Set this variable to zero, to not open
 " the Gtags output window by default.  You can open it manually by using
 " the :cwindow command.
@@ -153,7 +146,7 @@ function! s:Memorize()
     call s:crumbs.push(l:data)
 endfunction
 
-function! s:Remind()
+function! gtags#remind()
     try
         let l:data = s:crumbs.pop()
     catch
@@ -333,7 +326,7 @@ endfunction
 "
 " RunGlobal()
 "
-function! s:RunGlobal(line)
+function! gtags#global(line)
     let l:pattern = s:Extract(a:line, 'pattern')
 
     if l:pattern == '%'
@@ -362,7 +355,7 @@ endfunction
 "
 " Execute RunGlobal() depending on the current position.
 "
-function! s:Cursor()
+function! gtags#cursor()
     let l:pattern = expand("<cword>")
     let l:option = "--from-here=\"" . line('.') . ":" . expand("%") . "\""
     call s:ExecLoad('', l:option, l:pattern)
@@ -371,7 +364,7 @@ endfunction
 "
 " Core Gtags function
 "
-function! s:Func(type, pattern)
+function! gtags#func(type, pattern)
     let l:option = ""
     if a:type == "g"
         let l:option .= " -x "
@@ -399,7 +392,7 @@ endfunction
 " Show the current position on mozilla.
 " (You need to execute htags(1) in your source directory.)
 "
-function! s:Gozilla()
+function! gtags#gozilla()
     let l:lineno = line('.')
     let l:filename = expand("%")
     let l:result = system('gozilla +' . l:lineno . ' ' . l:filename)
@@ -408,12 +401,12 @@ endfunction
 "
 " Custom completion.
 "
-function! GtagsCandidate(lead, line, pos)
+function! gtags#complete(lead, line, pos)
     let s:option = s:Extract(a:line, 'option')
-    return GtagsCandidateCore(a:lead, a:line, a:pos)
+    return s:GtagsCandidateCore(a:lead, a:line, a:pos)
 endfunction
 
-function! GtagsCandidateCore(lead, line, pos)
+function! s:GtagsCandidateCore(lead, line, pos)
     if s:option == 'g'
         return ''
     elseif s:option == 'f'
@@ -436,25 +429,12 @@ function! GtagsCandidateCore(lead, line, pos)
     endif
 endfunction
 
-function! s:ShowLibPath()
+function! gtags#show_lib_path()
     echo $GTAGSLIBPATH
 endfunction
 
-function! s:AddLib(path)
+function! gtags#add_lib(path)
     let $GTAGSLIBPATH .= ':'.a:path
     echo $GTAGSLIBPATH
 endfunction
 
-" Define the set of Gtags commands
-command! -nargs=* -complete=custom,GtagsCandidate Gtags call s:RunGlobal(<q-args>)
-command! -nargs=0 GtagsCursor call s:Cursor()
-command! -nargs=0 Gozilla call s:Gozilla()
-command! -nargs=+ -complete=custom,GtagsCandidate GtagsFunc call s:Func(<f-args>)
-command! -nargs=0 GtagsShowLibPath call s:ShowLibPath()
-command! -nargs=+ -complete=dir GtagsAddLib call s:AddLib(<q-args>)
-command! -nargs=0 GtagsRemind call s:Remind()
-command! GtagsMapKeys call s:MapKeys()
-
-
-""
-" @section USAGE, usage
