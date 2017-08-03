@@ -1,28 +1,3 @@
-" File: gtags.vim
-" Author: Tama Communications Corporation
-" Author: rxwen
-" Author: critiqjo
-" Version: 1.0
-" Last Modified: Oct 02 11:37:36 CST 2015
-"
-" Copyright and licence
-" ---------------------
-" Copyright (c) 2004, 2008, 2010, 2011 Tama Communications Corporation
-"
-" This file is part of GNU GLOBAL.
-"
-" This program is free software: you can redistribute it and/or modify
-" it under the terms of the GNU General Public License as published by
-" the Free Software Foundation, either version 3 of the License, or
-" (at your option) any later version.
-"
-" This program is distributed in the hope that it will be useful,
-" but WITHOUT ANY WARRANTY; without even the implied warranty of
-" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-" GNU General Public License for more details.
-"
-" You should have received a copy of the GNU General Public License
-" along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 if !executable('gtags')
     " gtags application is not executable
@@ -479,3 +454,7 @@ command! -nargs=0 GtagsShowLibPath call s:ShowLibPath()
 command! -nargs=+ -complete=dir GtagsAddLib call s:AddLib(<q-args>)
 command! -nargs=0 GtagsRemind call s:Remind()
 command! GtagsMapKeys call s:MapKeys()
+
+
+""
+" @section USAGE, usage

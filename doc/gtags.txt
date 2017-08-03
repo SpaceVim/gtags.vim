@@ -4,12 +4,23 @@ spacevim.org                                                           *gtags*
 ==============================================================================
 CONTENTS                                                      *gtags-contents*
   1. Introduction................................................|gtags-intro|
+  2. Configuration..............................................|gtags-config|
+  3. USAGE.......................................................|gtags-usage|
 
 ==============================================================================
 INTRODUCTION                                                     *gtags-intro*
 
 The gtags.vim plug-in script integrates the GNU GLOBAL source code tag system
 with Vim. About the details, see http://www.gnu.org/software/global/.
+
+==============================================================================
+CONFIGURATION                                                   *gtags-config*
+
+                                                            *g:gtags_auto_map*
+Enable/Disable default mappings.
+
+==============================================================================
+USAGE                                                            *gtags-usage*
 
 
 vim:tw=78:ts=8:ft=help:norl:
