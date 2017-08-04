@@ -476,9 +476,9 @@ endfunction
 let s:progress = 0
 function! gtags#update(bang) abort
     if a:bang && filereadable('GTAGS')
-        let cmd = [g:gtags_global_command, '--single-update', expand('%:p')]
+        let cmd = ['gtags', '--single-update', expand('%:p')]
     else
-        let cmd = [g:gtags_global_command]
+        let cmd = ['gtags']
     endif
     let s:progress = s:JOB.start(cmd, {'on_exit' : funcref('s:on_update_exit')})
 endfunction
@@ -487,7 +487,7 @@ function! s:on_update_exit(id, data, event) abort
     let s:progress = 0
     if str2nr(a:data) != 1
         echohl WarningMsg
-        echo 'failed to update gtags'
+        echo 'failed to update gtags, exit data: ' . a:data
         echohl None
     endif
 endfunction
