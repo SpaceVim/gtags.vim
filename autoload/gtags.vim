@@ -483,11 +483,11 @@ function! gtags#update(bang) abort
     let s:progress = s:JOB.start(cmd, {'on_exit' : funcref('s:on_update_exit')})
 endfunction
 
-function! s:on_update_exit(id, data, event) abort
+function! s:on_update_exit(...) abort
     let s:progress = 0
-    if str2nr(a:data) != 1
+    if str2nr(a:2) > 0
         echohl WarningMsg
-        echo 'failed to update gtags, exit data: ' . a:data
+        echo 'failed to update gtags, exit data: ' . a:2
         echohl None
     endif
 endfunction
