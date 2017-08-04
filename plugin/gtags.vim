@@ -140,5 +140,10 @@ command! -nargs=+ -complete=dir GtagsAddLib call gtags#add_lib(<q-args>)
 " <
 command! -nargs=0 GtagsRemind call gtags#remind()
 
+""
+" Update gtags for current file, with a {bang}, will update the project's
+" gtags database.
+command! -nargs=0 -bang GtagsGenerate call gtags#update(<bang>1)
+
 
 

@@ -13,6 +13,11 @@ endif
 let g:loaded_gtags = 1
 
 
+" SpaceVim's API
+
+let s:JOB = SpaceVim#api#import('job')
+
+
 ""
 " Set the global command name. If it is not set, will use $GTAGSGLOBAL, and if
 " $GTAGSGLOBAL still is an empty string, then will use 'global'.
@@ -27,8 +32,8 @@ let g:gtags_auto_map = get(g:, 'gtags_auto_map', 0)
 ""
 " This setting will open the |quickfix| list when adding entries. A value of 2 will
 " preserve the cursor position when the |quickfix| window is
-" opened. Defaults to 0.
-let g:gtags_open_list = get(g:, 'gtags_open_list', 0)
+" opened. Defaults to 2.
+let g:gtags_open_list = get(g:, 'gtags_open_list', 2)
 
 " -- ctags-x format
 " let Gtags_Result = "ctags-x"
@@ -107,7 +112,7 @@ function! s:MapKeys() abort
     nnoremap <C-\>u :call <SID>UpdateDatabase ()<CR><CR>
 endfunction
 
-if g:Gtags_Auto_Map == 1
+if g:gtags_auto_map == 1
     call s:MapKeys()
 endif
 
@@ -179,7 +184,7 @@ function! s:Extract(line, target) abort
     let l:i = 0
 
     " skip command name.
-    if a:line =~ '^Gtags'
+    if a:line =~# '^Gtags'
         let l:i = 5
     endif
     while l:i < l:length && a:line[l:i] ==# ' '
@@ -425,7 +430,7 @@ endfunction
 function! gtags#gozilla() abort
     let l:lineno = line('.')
     let l:filename = expand('%')
-    let l:result = system('gozilla +' . l:lineno . ' ' . l:filename)
+    call system('gozilla +' . l:lineno . ' ' . l:filename)
 endfunction
 
 "
@@ -436,7 +441,7 @@ function! gtags#complete(lead, line, pos) abort
     return s:GtagsCandidateCore(a:lead, a:line, a:pos)
 endfunction
 
-function! s:GtagsCandidateCore(lead, line, pos) abort
+function! s:GtagsCandidateCore(lead, ...) abort
     if s:option ==# 'g'
         return ''
     elseif s:option ==# 'f'
@@ -466,5 +471,20 @@ endfunction
 function! gtags#add_lib(path) abort
     let $GTAGSLIBPATH .= ':'.a:path
     echo $GTAGSLIBPATH
+endfunction
+
+function! gtags#update(bang) abort
+    if a:bang
+        " update file gtags
+        echo 1
+    else
+        " update project gtags
+        echo 0
+    endif
+
+endfunction
+
+function! s:on_update_exit() abort
+    
 endfunction
 
