@@ -475,10 +475,7 @@ endfunction
 
 let s:progress = 0
 function! gtags#update(bang) abort
-    if !filereadable('GTAGS') || s:progress != 0
-        return
-    endif
-    if a:bang
+    if a:bang && filereadable('GTAGS')
         let cmd = [g:gtags_global_command, '--single-update', expand('%:p')]
     else
         let cmd = [g:gtags_global_command]
@@ -488,7 +485,7 @@ endfunction
 
 function! s:on_update_exit(id, data, event) abort
     let s:progress = 0
-    if a:data != 1
+    if str2nr(a:data) != 1
         echohl WarningMsg
         echo 'failed to update gtags'
         echohl None
