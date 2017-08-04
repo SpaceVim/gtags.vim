@@ -473,18 +473,25 @@ function! gtags#add_lib(path) abort
     echo $GTAGSLIBPATH
 endfunction
 
+let s:progress = 0
 function! gtags#update(bang) abort
-    if a:bang
-        " update file gtags
-        echo 1
-    else
-        " update project gtags
-        echo 0
+    if !filereadable('GTAGS') || s:progress != 0
+        return
     endif
-
+    if a:bang
+        let cmd = [g:gtags_global_command, '--single-update', expand('%:p')]
+    else
+        let cmd = [g:gtags_global_command]
+    endif
+    let s:progress = s:JOB.start(cmd, {'on_exit' : funcref('s:on_update_exit')})
 endfunction
 
-function! s:on_update_exit() abort
-    
+function! s:on_update_exit(id, data, event) abort
+    let s:progress = 0
+    if a:data != 1
+        echohl WarningMsg
+        echo 'failed to update gtags'
+        echohl None
+    endif
 endfunction
 
