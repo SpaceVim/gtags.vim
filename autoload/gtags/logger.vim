@@ -2,6 +2,14 @@ let s:LOG = SpaceVim#api#import('logger')
 
 call s:LOG.set_name('Gtags')
 
+""
+" set the path to gtags log file.
+let g:gtags_log_file = get(g:, 'gtags_log_file', '')
+
+if !empty(g:gtags_log_file)
+    call s:LOG.set_file(g:gtags_log_file)
+endif
+
 function! gtags#logger#log(level, msg) abort
     if a:level ==# 'info'
         call s:LOG.info(a:msg)
@@ -13,7 +21,7 @@ function! gtags#logger#log(level, msg) abort
 endfunction
 
 function! gtags#logger#view(level)
-    call s:LOG.view(a:level)
+    echo s:LOG.view(a:level)
 endfunction
 
 
