@@ -361,6 +361,7 @@ endfunction
 " RunGlobal()
 "
 function! gtags#global(line) abort
+    call gtags#logger#log('info', a:line)
     let l:pattern = s:Extract(a:line, 'pattern')
 
     if l:pattern ==# '%'
@@ -370,7 +371,7 @@ function! gtags#global(line) abort
     endif
     let l:option = s:Extract(a:line, 'option')
     " If no pattern supplied then get it from user.
-    if l:pattern ==# ''
+    if l:pattern ==# '' && l:option !=# 'P'
         let s:option = l:option
         if l:option =~# 'f'
             let l:line = input('Gtags for file: ', expand('%'), 'file')

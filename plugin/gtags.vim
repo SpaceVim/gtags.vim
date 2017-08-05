@@ -145,5 +145,7 @@ command! -nargs=0 GtagsRemind call gtags#remind()
 " gtags database.
 command! -nargs=0 -bang GtagsGenerate call gtags#update(<bang>1)
 
+command! -nargs=1 GtagsViewLog call gtags#logger#view(<q-args>)
+
 
 
