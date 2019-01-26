@@ -147,7 +147,7 @@ command! -nargs=0 -bang GtagsGenerate call gtags#update(<bang>1)
 
 ""
 " Vew the log of gtags.vim
-command! -nargs=1 GtagsViewLog call gtags#logger#view(<q-args>)
+command! -nargs=* -bang GtagsViewLog call gtags#logger#view(<bang>, <f-args>)
 
 
 

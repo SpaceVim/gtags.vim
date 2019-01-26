@@ -9,3 +9,14 @@ The gtags.vim plugin script integrates the GNU GLOBAL source code tag system wit
 
 This is part of SpaceVim's tags layer, and based on SpaceVim's API.
 
+Features:
+
+- generate gtags file automatically
+- quickfix list support
+- fuzzy find souces
+    - denite
+    - unite
+    - fzf
+    - leaderf
+    - fzy
+

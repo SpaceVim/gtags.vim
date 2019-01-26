@@ -475,6 +475,7 @@ function! gtags#add_lib(path) abort
 endfunction
 
 let s:progress = 0
+
 function! gtags#update(bang) abort
     if a:bang && filereadable('GTAGS')
         let cmd = ['gtags', '--single-update', expand('%:p')]

@@ -181,7 +181,7 @@ COMMANDS                                                      *gtags-commands*
   Update gtags for current file, with a {bang}, will update the project's
   gtags database.
 
-:GtagsViewLog                                                  *:GtagsViewLog*
+:GtagsViewLog[!]                                               *:GtagsViewLog*
   Vew the log of gtags.vim
 
 
