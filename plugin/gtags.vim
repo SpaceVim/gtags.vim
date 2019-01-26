@@ -4,6 +4,10 @@
 " system with Vim. About the details, see http://www.gnu.org/software/global/.
 
 
+let g:gtags_cache_dir = '~/.cache/SpaceVim/tags/'
+
+
+
 ""
 " General form of Gtags command is as follows:
 " >

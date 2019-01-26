@@ -16,6 +16,7 @@ let g:loaded_gtags = 1
 " SpaceVim's API
 
 let s:JOB = SpaceVim#api#import('job')
+let s:FILE = SpaceVim#api#import('file')
 
 
 ""
@@ -477,11 +478,17 @@ endfunction
 let s:progress = 0
 
 function! gtags#update(bang) abort
+    let dir = s:FILE.path_to_fname(getcwd())
     if a:bang && filereadable('GTAGS')
         let cmd = ['gtags', '--single-update', expand('%:p')]
     else
         let cmd = ['gtags']
     endif
+    let dir = s:FILE.unify_path(g:gtags_cache_dir) . dir
+    if !isdirectory(dir)
+        call mkdir(dir, 'p')
+    endif
+    let cmd += ['-O', dir]
     let s:progress = s:JOB.start(cmd, {'on_exit' : funcref('s:on_update_exit')})
 endfunction
 
