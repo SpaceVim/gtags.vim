@@ -275,9 +275,9 @@ function! s:ExecLoad(option, long_option, pattern) abort
     if a:long_option !=# ''
         let l:option = a:long_option . ' '
     endif
-    if s:version[0] > 6 || (s:version[0] == 6 && s:version[1] >= 5)
-        let l:option = l:option . '--nearness=' . expand('%:p:h') . ' '
-    endif
+    " if s:version[0] > 6 || (s:version[0] == 6 && s:version[1] >= 5)
+        " let l:option = l:option . '--nearness=' . expand('%:p:h') . ' '
+    " endif
     let l:option = l:option . '--result=' . g:Gtags_Result . ' -q'
     let l:option = l:option . s:TrimOption(a:option)
     if l:isfile == 1
@@ -286,7 +286,9 @@ function! s:ExecLoad(option, long_option, pattern) abort
         let l:cmd = g:gtags_global_command . ' ' . l:option . 'e ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char
     endif
 
+    exe 'lcd ' . s:FILE.unify_path(g:gtags_cache_dir) . s:FILE.path_to_fname(getcwd())
     let l:result = system(l:cmd)
+    e
     if v:shell_error != 0
         if v:shell_error == 2
             call s:Error('invalid arguments. (gtags.vim requires GLOBAL 5.7 or later)')
