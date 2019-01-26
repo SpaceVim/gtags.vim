@@ -4,6 +4,10 @@
 " system with Vim. About the details, see http://www.gnu.org/software/global/.
 
 
+let g:gtags_cache_dir = '~/.cache/SpaceVim/tags/'
+
+
+
 ""
 " General form of Gtags command is as follows:
 " >
@@ -145,7 +149,9 @@ command! -nargs=0 GtagsRemind call gtags#remind()
 " gtags database.
 command! -nargs=0 -bang GtagsGenerate call gtags#update(<bang>1)
 
-command! -nargs=1 GtagsViewLog call gtags#logger#view(<q-args>)
+""
+" Vew the log of gtags.vim
+command! -nargs=* -bang GtagsViewLog call gtags#logger#view(<bang>, <f-args>)
 
 
 

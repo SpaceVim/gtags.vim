@@ -16,6 +16,7 @@ let g:loaded_gtags = 1
 " SpaceVim's API
 
 let s:JOB = SpaceVim#api#import('job')
+let s:FILE = SpaceVim#api#import('file')
 
 
 ""
@@ -26,7 +27,7 @@ let g:gtags_global_command = get(g:, 'gtags_global_command',
             \ )
 
 ""
-" Enable/Disable default mappings.
+" Enable/Disable default mappings. By default it is disabled.
 let g:gtags_auto_map = get(g:, 'gtags_auto_map', 0)
 
 ""
@@ -274,9 +275,9 @@ function! s:ExecLoad(option, long_option, pattern) abort
     if a:long_option !=# ''
         let l:option = a:long_option . ' '
     endif
-    if s:version[0] > 6 || (s:version[0] == 6 && s:version[1] >= 5)
-        let l:option = l:option . '--nearness=' . expand('%:p:h') . ' '
-    endif
+    " if s:version[0] > 6 || (s:version[0] == 6 && s:version[1] >= 5)
+        " let l:option = l:option . '--nearness=' . expand('%:p:h') . ' '
+    " endif
     let l:option = l:option . '--result=' . g:Gtags_Result . ' -q'
     let l:option = l:option . s:TrimOption(a:option)
     if l:isfile == 1
@@ -285,7 +286,9 @@ function! s:ExecLoad(option, long_option, pattern) abort
         let l:cmd = g:gtags_global_command . ' ' . l:option . 'e ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char
     endif
 
+    exe 'lcd ' . s:FILE.unify_path(g:gtags_cache_dir) . s:FILE.path_to_fname(getcwd())
     let l:result = system(l:cmd)
+    e
     if v:shell_error != 0
         if v:shell_error == 2
             call s:Error('invalid arguments. (gtags.vim requires GLOBAL 5.7 or later)')
@@ -475,12 +478,19 @@ function! gtags#add_lib(path) abort
 endfunction
 
 let s:progress = 0
+
 function! gtags#update(bang) abort
+    let dir = s:FILE.path_to_fname(getcwd())
     if a:bang && filereadable('GTAGS')
         let cmd = ['gtags', '--single-update', expand('%:p')]
     else
         let cmd = ['gtags']
     endif
+    let dir = s:FILE.unify_path(g:gtags_cache_dir) . dir
+    if !isdirectory(dir)
+        call mkdir(dir, 'p')
+    endif
+    let cmd += ['-O', dir]
     let s:progress = s:JOB.start(cmd, {'on_exit' : funcref('s:on_update_exit')})
 endfunction
 

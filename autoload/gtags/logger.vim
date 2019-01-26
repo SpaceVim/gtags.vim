@@ -20,8 +20,8 @@ function! gtags#logger#log(level, msg) abort
     endif
 endfunction
 
-function! gtags#logger#view(level)
-    echo s:LOG.view(a:level)
+function! gtags#logger#view(...)
+    echo s:LOG.view(get(a:000, 0, 'info'))
 endfunction
 
 
