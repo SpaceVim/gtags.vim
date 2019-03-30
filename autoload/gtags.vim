@@ -484,7 +484,7 @@ function! gtags#update(bang) abort
     if a:bang && filereadable('GTAGS')
         let cmd = ['gtags', '--single-update', expand('%:p')]
     else
-        let cmd = ['gtags']
+        let cmd = ['gtags', '--skip-unreadable']
     endif
     let dir = s:FILE.unify_path(g:gtags_cache_dir) . dir
     if !isdirectory(dir)
