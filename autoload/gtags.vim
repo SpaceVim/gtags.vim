@@ -286,7 +286,14 @@ function! s:ExecLoad(option, long_option, pattern) abort
         let l:cmd = g:gtags_global_command . ' ' . l:option . 'e ' . g:Gtags_Shell_Quote_Char . a:pattern . g:Gtags_Shell_Quote_Char
     endif
 
-    exe 'lcd ' . s:FILE.unify_path(g:gtags_cache_dir) . s:FILE.path_to_fname(getcwd())
+    if empty($GTAGSROOT)
+      let $GTAGSROOT = getcwd()
+    endif
+
+    if empty($GTAGSDBPATH)
+      let $GTAGSDBPATH = s:FILE.unify_path(g:gtags_cache_dir) . s:FILE.path_to_fname(getcwd())
+    endif
+
     let l:result = system(l:cmd)
     e
     if v:shell_error != 0
