@@ -7,6 +7,10 @@
 let g:gtags_cache_dir = '~/.cache/SpaceVim/tags/'
 
 
+if !exists('g:gtags_auto_update')
+    let g:gtags_auto_update = 1
+endif
+
 
 ""
 " General form of Gtags command is as follows:
