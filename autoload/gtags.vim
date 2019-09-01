@@ -76,47 +76,6 @@ if !exists('g:Gtags_Single_Quote_Char')
     endif
 endif
 
-" Suggested map:
-function! s:MapKeys() abort
-    nnoremap <C-\><C-\> :Gtags <C-R>=expand("<cword>")<CR><CR>
-    " search for tags not defined
-    nnoremap <C-\>s :call <SID>Func ("s", expand("<cword>"))<CR>
-    " search for definition
-    nnoremap <C-\>g :call <SID>Func ("g", expand("<cword>"))<CR>
-    " search for reference
-    nnoremap <C-\>c :call <SID>Func ("r", expand("<cword>"))<CR>
-    " search for pattern, like egrep
-    nnoremap <C-\>e :call <SID>Func ("e", expand("<cword>"))<CR>
-    " search for file
-    nnoremap <C-\>f :call <SID>Func ("f", expand("<cword>"))<CR>
-    " search tags in current file
-    nnoremap <C-\>t :call <SID>Func ("t", expand("%"))<CR>
-
-    nnoremap <C-\>S :call <SID>Func
-                \("s", input('Find symbols not defined: ', '',
-                \"custom,GtagsCandidate"))<CR>
-    nnoremap <C-\>G :call <SID>Func
-                \("g", input('Find this definition: ', '',
-                \"custom,GtagsCandidate"))<CR>
-    nnoremap <C-\>C :call <SID>Func
-                \("r", input('Find functions calling this function: ', '',
-                \"custom,GtagsCandidate"))<CR>
-    nnoremap <C-\>E :call <SID>Func
-                \("e", input('Find pattern: ', '',
-                \"custom,GtagsCandidate"))<CR>
-    nnoremap <C-\>F :call <SID>Func
-                \("f", input('Find file: ', '',
-                \"custom,GtagsCandidate"))<CR>
-    nnoremap <C-\>T :call <SID>Func
-                \("t", input('Find tags in file: ', '',
-                \"file"))<CR>
-    nnoremap <C-\>u :call <SID>UpdateDatabase ()<CR><CR>
-endfunction
-
-if g:gtags_auto_map == 1
-    call s:MapKeys()
-endif
-
 "
 " Stack Object.
 "
