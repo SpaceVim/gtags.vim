@@ -291,7 +291,7 @@ function! s:ExecLoad(option, long_option, pattern) abort
     endif
 
     if empty($GTAGSDBPATH)
-      let $GTAGSDBPATH = s:FILE.unify_path(g:gtags_cache_dir) . s:FILE.path_to_fname(getcwd())
+      let $GTAGSDBPATH = s:FILE.unify_path(g:gtags_cache_dir) . s:FILE.path_to_fname(SpaceVim#plugins#projectmanager#current_root())
     endif
 
     let l:result = system(l:cmd)
@@ -426,15 +426,6 @@ function! gtags#func(type, pattern) abort
 endfunction
 
 "
-" Update gtags database
-"
-function! gtags#update_database() abort
-    echomsg 'update gtags database'
-    let l:result = system('global -u')
-    echom l:result
-endfunction
-
-"
 " Show the current position on mozilla.
 " (You need to execute htags(1) in your source directory.)
 "
@@ -487,13 +478,13 @@ endfunction
 let s:progress = 0
 
 function! gtags#update(bang) abort
-    let dir = s:FILE.path_to_fname(getcwd())
-    if a:bang && filereadable('GTAGS')
+    let dir = s:FILE.unify_path(g:gtags_cache_dir) 
+                \ . s:FILE.path_to_fname(SpaceVim#plugins#projectmanager#current_root())
+    if a:bang && filereadable(dir . '/GTAGS')
         let cmd = ['gtags', '--single-update', expand('%:p')]
     else
         let cmd = ['gtags', '--skip-unreadable']
     endif
-    let dir = s:FILE.unify_path(g:gtags_cache_dir) . dir
     if !isdirectory(dir)
         call mkdir(dir, 'p')
     endif
