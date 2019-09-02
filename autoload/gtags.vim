@@ -439,10 +439,14 @@ let s:progress = 0
 function! gtags#update(bang) abort
     let dir = s:FILE.unify_path(g:gtags_cache_dir) 
                 \ . s:FILE.path_to_fname(SpaceVim#plugins#projectmanager#current_root())
+    let cmd = ['gtags']
+    if !empty(g:gtags_gtagslabel)
+        let cmd += ['–gtagslabel=' . g:gtags_gtagslabel]
+    endif
     if a:bang && filereadable(dir . '/GTAGS')
-        let cmd = ['gtags', '--single-update', expand('%:p')]
+        let cmd += ['--single-update', expand('%:p')]
     else
-        let cmd = ['gtags', '--skip-unreadable']
+        let cmd += ['--skip-unreadable']
     endif
     if !isdirectory(dir)
         call mkdir(dir, 'p')
