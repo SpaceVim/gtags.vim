@@ -14,6 +14,11 @@ if !exists('g:gtags_auto_update')
 endif
 
 
+if !exists('g:gtags_silent')
+    let g:gtags_silent = 1
+endif
+
+
 ""
 " General form of Gtags command is as follows:
 " >

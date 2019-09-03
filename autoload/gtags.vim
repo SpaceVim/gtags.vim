@@ -436,14 +436,14 @@ endfunction
 
 let s:progress = 0
 
-function! gtags#update(bang) abort
+function! gtags#update(single_update) abort
     let dir = s:FILE.unify_path(g:gtags_cache_dir) 
                 \ . s:FILE.path_to_fname(SpaceVim#plugins#projectmanager#current_root())
     let cmd = ['gtags']
     if !empty(g:gtags_gtagslabel)
         let cmd += ['–gtagslabel=' . g:gtags_gtagslabel]
     endif
-    if a:bang && filereadable(dir . '/GTAGS')
+    if a:single_update && filereadable(dir . '/GTAGS')
         let cmd += ['--single-update', expand('%:p')]
     else
         let cmd += ['--skip-unreadable']
@@ -457,7 +457,7 @@ endfunction
 
 function! s:on_update_exit(...) abort
     let s:progress = 0
-    if str2nr(a:2) > 0
+    if str2nr(a:2) > 0 && !g:gtags_silent
         echohl WarningMsg
         echo 'failed to update gtags, exit data: ' . a:2
         echohl None
