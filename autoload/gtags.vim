@@ -247,7 +247,7 @@ function! s:ExecLoad(option, long_option, pattern) abort
 
     let l:restore_gtagsroot = 0
     if empty($GTAGSROOT)
-      let $GTAGSROOT = getcwd()
+      let $GTAGSROOT = SpaceVim#plugins#projectmanager#current_root()
       let l:restore_gtagsroot = 1
     endif
 
