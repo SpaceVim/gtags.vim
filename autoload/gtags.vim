@@ -1,3 +1,5 @@
+scriptencoding utf-8
+
 if !executable('gtags')
     echohl WarningMsg
     echom 'you need to install gnu global!'
