@@ -1,3 +1,5 @@
+scriptencoding utf-8
+
 if !executable('gtags')
     echohl WarningMsg
     echom 'you need to install gnu global!'
@@ -253,7 +255,7 @@ function! s:ExecLoad(option, long_option, pattern) abort
 
     let l:restore_gtagsdbpath = 0
     if empty($GTAGSDBPATH)
-      let $GTAGSDBPATH = s:FILE.unify_path(g:gtags_cache_dir) . s:FILE.path_to_fname(SpaceVim#plugins#projectmanager#current_root())
+      let $GTAGSDBPATH = s:FILE.unify_path(g:gtags_cache_dir) . s:FILE.path_to_fname($GTAGSROOT)
       let l:restore_gtagsdbpath = 1
     endif
 
