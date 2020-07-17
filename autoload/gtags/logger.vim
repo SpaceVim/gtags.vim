@@ -1,3 +1,5 @@
+scriptencoding utf-8
+
 let s:LOG = SpaceVim#api#import('logger')
 
 call s:LOG.set_name('Gtags')
