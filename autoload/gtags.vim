@@ -458,7 +458,7 @@ function! gtags#update(single_update) abort
                 \ . s:FILE.path_to_fname(SpaceVim#plugins#projectmanager#current_root())
     let cmd = ['gtags']
     if !empty(g:gtags_gtagslabel)
-        let cmd += ['-–gtagslabel=' . g:gtags_gtagslabel]
+        let cmd += ['--gtagslabel=' . g:gtags_gtagslabel]
     endif
     if a:single_update && filereadable(dir . '/GTAGS')
         let cmd += ['--single-update', expand('%:p')]
