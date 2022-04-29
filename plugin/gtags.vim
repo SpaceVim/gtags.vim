@@ -5,10 +5,15 @@
 
 scriptencoding utf-8
 
-let g:gtags_cache_dir = '~/.cache/SpaceVim/tags/'
+if !exists('g:gtags_cache_dir')
+    let g:gtags_cache_dir = '~/.cache/SpaceVim/tags/'
+endif
 
 
-let g:gtags_gtagslabel = ''
+if !exists('g:gtags_gtagslabel')
+    let g:gtags_gtagslabel = ''
+endif
+
 
 if !exists('g:gtags_auto_update')
     let g:gtags_auto_update = 1
